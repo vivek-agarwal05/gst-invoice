@@ -634,7 +634,8 @@ function generatePDF() {
 
   // Build a clean standalone div for pdf
   const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'background:#fff;padding:0;margin:0;width:794px;font-family:Arial,sans-serif;font-size:11px;color:#000;line-height:1.35';
+  // ADDED: position: absolute and negative coordinates to prevent screen width constraints
+  wrapper.style.cssText = 'position:absolute; top:-9999px; left:-9999px; background:#fff;padding:0;margin:0;width:794px;font-family:Arial,sans-serif;font-size:11px;color:#000;line-height:1.35;box-sizing:border-box;';
   wrapper.innerHTML = buildInvoiceHTML();
   document.body.appendChild(wrapper);
 
@@ -642,7 +643,8 @@ function generatePDF() {
     margin:      [8, 8, 8, 8],
     filename:    invNo + '.pdf',
     image:       { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+    // ADDED: windowWidth: 800 to ensure the canvas renders the full width
+    html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 800 },
     jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
@@ -658,7 +660,6 @@ function generatePDF() {
       alert('PDF error: ' + err.message);
     });
 }
-
 // ── Print ──────────────────────────────────────────────────
 function printInvoice() {
   if (!validateForm()) return;
