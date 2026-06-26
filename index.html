@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GST Invoice Generator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📄</div>
+      <div class="logo-text">
+        <span class="logo-title">GST Invoice</span>
+        <span class="logo-sub">Generator</span>
+      </div>
+    </div>
+    <nav>
+      <a class="nav-link active" onclick="navigate('dashboard',this)">
+        <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-link" onclick="navigate('new-invoice',this)">
+        <span class="nav-icon">➕</span><span class="nav-label">New Invoice</span>
+      </a>
+      <a class="nav-link" onclick="navigate('history',this)">
+        <span class="nav-icon">📜</span><span class="nav-label">Invoice History</span>
+      </a>
+      <a class="nav-link" onclick="navigate('settings',this)">
+        <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <section id="dashboard" class="page active">
+      <div class="page-header"><h1>Dashboard</h1></div>
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="dash-label">Total Invoices</div>
+          <div class="dash-value" id="dash-count">0</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-label">Total Revenue</div>
+          <div class="dash-value" id="dash-revenue">₹ 0.00</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-label">Recent Invoice</div>
+          <div class="dash-value small" id="dash-recent">—</div>
+        </div>
+        <div class="dash-card action-card">
+          <div class="dash-label">Quick Action</div>
+          <button class="btn btn-primary" onclick="navigate('new-invoice',null)">+ New Invoice</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== NEW INVOICE ===== -->
+    <section id="new-invoice" class="page">
+      <div class="page-header"><h1>New Invoice</h1></div>
+
+      <!-- SELLER & INVOICE HEADER -->
+      <div class="card">
+        <div class="card-title">Seller &amp; Invoice Details</div>
+        <div class="two-col">
+          <!-- LEFT: Seller -->
+          <div>
+            <div class="field-group">
+              <label>Seller / Company Name *</label>
+              <input id="sellerName" type="text" placeholder="e.g. SHREE RAM COTTON FACTORY">
+            </div>
+            <div class="field-group">
+              <label>Seller Address *</label>
+              <textarea id="sellerAddress" rows="3" placeholder="Full address with pin code"></textarea>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>GSTIN/UIN *</label>
+                <input id="sellerGST" type="text" placeholder="e.g. 06ANNPR5074K1ZD">
+              </div>
+              <div class="field-group">
+                <label>State Name &amp; Code</label>
+                <input id="sellerState" type="text" placeholder="e.g. Haryana, Code: 06">
+              </div>
+            </div>
+          </div>
+          <!-- RIGHT: Invoice meta -->
+          <div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Invoice No. *</label>
+                <input id="invoiceNumber" type="text" placeholder="e.g. INV-001">
+              </div>
+              <div class="field-group">
+                <label>Date *</label>
+                <input id="invoiceDate" type="date">
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Delivery Note</label>
+                <input id="deliveryNote" type="text" placeholder="">
+              </div>
+              <div class="field-group">
+                <label>Mode / Terms of Payment</label>
+                <select id="paymentMode">
+                  <option>RTGS</option>
+                  <option>NEFT</option>
+                  <option>CHEQUE</option>
+                  <option>CASH</option>
+                  <option>CREDIT</option>
+                  <option>OTHER</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Supplier's Ref.</label>
+                <input id="supplierRef" type="text" placeholder="">
+              </div>
+              <div class="field-group">
+                <label>Other References</label>
+                <input id="otherRef" type="text" placeholder="">
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Buyer's Order No.</label>
+                <input id="buyerOrderNo" type="text" placeholder="">
+              </div>
+              <div class="field-group">
+                <label>Dated</label>
+                <input id="buyerOrderDate" type="text" placeholder="">
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Despatch Document No.</label>
+                <input id="despatchDocNo" type="text" placeholder="">
+              </div>
+              <div class="field-group">
+                <label>Delivery Note Date</label>
+                <input id="deliveryNoteDate" type="text" placeholder="">
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Despatched Through</label>
+                <input id="despatchThrough" type="text" placeholder="e.g. BALODA">
+              </div>
+              <div class="field-group">
+                <label>Destination</label>
+                <input id="destination" type="text" placeholder="e.g. BALODA">
+              </div>
+            </div>
+            <div class="field-group">
+              <label>Terms of Delivery</label>
+              <input id="termsOfDelivery" type="text" placeholder="e.g. RELEASE OF PAYMENT WITHIN 7 DAYS FROM DISPATCH">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUYER -->
+      <div class="card">
+        <div class="card-title">Buyer (Consignee / Bill To)</div>
+        <div class="two-col">
+          <div>
+            <div class="field-group"><label>Buyer Label</label>
+              <input id="buyerLabel" type="text" value="Buyer (Bill to)" placeholder="Buyer (Bill to)"></div>
+            <div class="field-group"><label>Buyer Name *</label>
+              <input id="buyerName" type="text" placeholder="e.g. SHIVA TRADERS"></div>
+            <div class="field-group"><label>Buyer Address *</label>
+              <textarea id="buyerAddress" rows="3" placeholder="Full address"></textarea></div>
+            <div class="field-row-2">
+              <div class="field-group"><label>GSTIN/UIN</label>
+                <input id="buyerGST" type="text" placeholder="e.g. 08BVMPA9578B1ZC"></div>
+              <div class="field-group"><label>State Name &amp; Code</label>
+                <input id="buyerState" type="text" placeholder="e.g. Rajasthan, Code: 08"></div>
+            </div>
+          </div>
+          <div>
+            <div class="field-group"><label>Consignee (Ship To)</label>
+              <input id="consigneeName" type="text" placeholder="Same as buyer or different"></div>
+            <div class="field-group"><label>Consignee Address</label>
+              <textarea id="consigneeAddress" rows="3" placeholder="Leave blank if same as buyer"></textarea></div>
+            <div class="field-row-2">
+              <div class="field-group"><label>Consignee GSTIN</label>
+                <input id="consigneeGST" type="text" placeholder=""></div>
+              <div class="field-group"><label>State Name &amp; Code</label>
+                <input id="consigneeState" type="text" placeholder=""></div>
+            </div>
+            <div class="field-group"><label>Contact No. *</label>
+              <input id="contactNumber" type="text" placeholder="Phone number"></div>
+            <div class="field-group"><label>E-Way Bill No.</label>
+              <input id="ewayBill" type="text" placeholder=""></div>
+            <div class="field-group"><label>Motor Vehicle No.</label>
+              <input id="vehicleNo" type="text" placeholder="e.g. HR66B1618"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS TABLE -->
+      <div class="card">
+        <div class="card-title">Products / Services</div>
+        <div class="table-wrap">
+          <table id="productsTable">
+            <thead>
+              <tr>
+                <th style="width:40px">Sl No.</th>
+                <th>Description of Goods</th>
+                <th style="width:90px">HSN/SAC</th>
+                <th style="width:100px">Quantity</th>
+                <th style="width:60px">Per</th>
+                <th style="width:110px">Rate (Incl. of Tax)</th>
+                <th style="width:80px">Rate</th>
+                <th style="width:110px">Amount</th>
+                <th style="width:60px">VAT %</th>
+                <th style="width:50px">Del</th>
+              </tr>
+            </thead>
+            <tbody id="productBody"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary mt10" onclick="addProductRow()">+ Add Row</button>
+      </div>
+
+      <!-- ADDITIONAL CHARGES -->
+      <div class="card">
+        <div class="card-title">Additional Charges &amp; Deductions</div>
+        <div class="field-row-4">
+          <div class="field-group">
+            <label>Loading Charges (₹)</label>
+            <input id="loadingCharges" type="number" value="0" min="0" step="0.01" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Freight Charges (₹)</label>
+            <input id="freightCharges" type="number" value="0" min="0" step="0.01" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Other Charges (₹)</label>
+            <input id="otherCharges" type="number" value="0" min="0" step="0.01" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Discount / Quality Allowance (₹)</label>
+            <input id="discount" type="number" value="0" min="0" step="0.01" oninput="recalc()">
+          </div>
+        </div>
+      </div>
+
+      <!-- GST SECTION -->
+      <div class="card" id="gstCard">
+        <div class="card-title">GST / Tax Configuration</div>
+
+        <div class="gst-type-row">
+          <label class="gst-radio-label">
+            <input type="radio" name="gstMode" value="cgst_sgst" checked onchange="onGstModeChange()">
+            <span>CGST + SGST (Intra-State)</span>
+          </label>
+          <label class="gst-radio-label">
+            <input type="radio" name="gstMode" value="igst" onchange="onGstModeChange()">
+            <span>IGST (Inter-State)</span>
+          </label>
+          <label class="gst-radio-label">
+            <input type="radio" name="gstMode" value="none" onchange="onGstModeChange()">
+            <span>No GST</span>
+          </label>
+        </div>
+
+        <!-- Rate selector -->
+        <div class="gst-rate-row" id="gstRateRow">
+          <label>Select GST Rate:</label>
+          <div class="gst-rate-chips">
+            <button class="chip active" onclick="selectGSTRate(0,this)">0%</button>
+            <button class="chip" onclick="selectGSTRate(5,this)">5%</button>
+            <button class="chip" onclick="selectGSTRate(12,this)">12%</button>
+            <button class="chip" onclick="selectGSTRate(18,this)">18%</button>
+            <button class="chip" onclick="selectGSTRate(28,this)">28%</button>
+            <span class="chip-sep">or</span>
+            <input id="customGSTRate" type="number" min="0" max="100" step="0.01"
+                   placeholder="Custom %" style="width:90px"
+                   oninput="applyCustomRate(this.value)">
+          </div>
+          <input type="hidden" id="gstRate" value="0">
+        </div>
+
+        <!-- Live summary -->
+        <div class="gst-summary" id="gstSummary">
+          <table class="summary-table">
+            <tr>
+              <td>Taxable Amount</td>
+              <td id="s-taxable">₹ 0.00</td>
+            </tr>
+            <tr id="row-cgst">
+              <td id="label-cgst">CGST (0%)</td>
+              <td id="s-cgst">₹ 0.00</td>
+            </tr>
+            <tr id="row-sgst">
+              <td id="label-sgst">SGST (0%)</td>
+              <td id="s-sgst">₹ 0.00</td>
+            </tr>
+            <tr id="row-igst" style="display:none">
+              <td id="label-igst">IGST (0%)</td>
+              <td id="s-igst">₹ 0.00</td>
+            </tr>
+            <tr class="summary-total">
+              <td>Grand Total</td>
+              <td id="s-total">₹ 0.00</td>
+            </tr>
+            <tr>
+              <td>Round Off</td>
+              <td id="s-roundoff">₹ 0.00</td>
+            </tr>
+            <tr class="summary-final">
+              <td>Final Amount</td>
+              <td id="s-final">₹ 0.00</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- BANK DETAILS -->
+      <div class="card">
+        <div class="card-title">Bank Details</div>
+        <div class="field-row-2">
+          <div class="field-group"><label>Bank Name *</label>
+            <input id="bankName" type="text" placeholder="e.g. HDFC BANK"></div>
+          <div class="field-group"><label>Account No. *</label>
+            <input id="accountNumber" type="text" placeholder="e.g. 50200077519178"></div>
+        </div>
+        <div class="field-row-2">
+          <div class="field-group"><label>IFSC Code *</label>
+            <input id="ifscCode" type="text" placeholder="e.g. HDFC0008651"></div>
+          <div class="field-group"><label>Branch</label>
+            <input id="branchName" type="text" placeholder="e.g. MAHENDERGARH"></div>
+        </div>
+      </div>
+
+      <!-- DECLARATION & SIGNATURE -->
+      <div class="card">
+        <div class="card-title">Declaration &amp; Signature</div>
+        <div class="two-col">
+          <div>
+            <div class="field-group"><label>Declaration Text</label>
+              <textarea id="declarationText" rows="3">We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</textarea>
+            </div>
+          </div>
+          <div>
+            <div class="field-group"><label>Authorised Signatory Name</label>
+              <input id="authorisedName" type="text" placeholder="Company name for signature block"></div>
+            <div class="field-group"><label>Upload Logo</label>
+              <input id="logoFile" type="file" accept="image/*" onchange="previewImg(this,'logoPreview')">
+              <div id="logoPreview" class="img-preview"></div>
+            </div>
+            <div class="field-group"><label>Upload Signature</label>
+              <input id="sigFile" type="file" accept="image/*" onchange="previewImg(this,'sigPreview')">
+              <div id="sigPreview" class="img-preview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="card actions-card">
+        <button class="btn btn-outline" onclick="previewInvoice()">👁 Preview</button>
+        <button class="btn btn-primary" onclick="generatePDF()">📄 Download PDF</button>
+        <button class="btn btn-secondary" onclick="printInvoice()">🖨 Print</button>
+        <button class="btn btn-success" onclick="saveInvoice()">💾 Save</button>
+        <button class="btn btn-danger" onclick="clearForm()">🗑 Clear</button>
+      </div>
+
+    </section>
+
+    <!-- ===== HISTORY ===== -->
+    <section id="history" class="page">
+      <div class="page-header">
+        <h1>Invoice History</h1>
+        <input id="searchBox" type="text" placeholder="Search invoice…" oninput="filterHistory()" style="padding:8px 14px;border:1px solid #ccc;border-radius:6px;font-size:14px;width:260px">
+      </div>
+      <div class="card" style="padding:0">
+        <table id="historyTable">
+          <thead>
+            <tr><th>Invoice No.</th><th>Date</th><th>Buyer</th><th>Amount</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="5" class="empty-msg">No invoices saved yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SETTINGS ===== -->
+    <section id="settings" class="page">
+      <div class="page-header"><h1>Settings – Save Defaults</h1></div>
+      <div class="card">
+        <div class="card-title">Default Seller Details</div>
+        <div class="field-row-2">
+          <div class="field-group"><label>Seller Name</label><input id="def-sellerName" type="text"></div>
+          <div class="field-group"><label>GSTIN</label><input id="def-sellerGST" type="text"></div>
+        </div>
+        <div class="field-group"><label>Address</label><textarea id="def-sellerAddress" rows="3"></textarea></div>
+        <div class="field-group"><label>State Name &amp; Code</label><input id="def-sellerState" type="text"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Default Bank Details</div>
+        <div class="field-row-2">
+          <div class="field-group"><label>Bank Name</label><input id="def-bankName" type="text"></div>
+          <div class="field-group"><label>Account No.</label><input id="def-accountNumber" type="text"></div>
+        </div>
+        <div class="field-row-2">
+          <div class="field-group"><label>IFSC Code</label><input id="def-ifscCode" type="text"></div>
+          <div class="field-group"><label>Branch</label><input id="def-branchName" type="text"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Default Images</div>
+        <div class="field-row-2">
+          <div class="field-group"><label>Default Logo</label>
+            <input type="file" id="def-logo" accept="image/*" onchange="saveDefaultImg('def-logo','def-logoPreview','defaultLogo')">
+            <div id="def-logoPreview" class="img-preview"></div>
+          </div>
+          <div class="field-group"><label>Default Signature</label>
+            <input type="file" id="def-sig" accept="image/*" onchange="saveDefaultImg('def-sig','def-sigPreview','defaultSig')">
+            <div id="def-sigPreview" class="img-preview"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card actions-card">
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑 Clear All Data</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div id="previewModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span>Invoice Preview</span>
+      <div>
+        <button class="btn btn-primary btn-sm" onclick="generatePDF()">📄 Download PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="printInvoice()">🖨 Print</button>
+        <button class="btn btn-danger btn-sm" onclick="document.getElementById('previewModal').style.display='none'">✕ Close</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="invoiceOutput"></div>
+    </div>
+  </div>
+</div>
+
+<!-- html2pdf CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
