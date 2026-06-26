@@ -671,8 +671,8 @@ function printInvoice() {
       body{font-family:Arial,sans-serif;font-size:11px;color:#000;margin:0;padding:16px}
       .inv-outer{border:1.5px solid #000}
       .inv-top-row,.inv-buyer-row,.inv-totals-row,.inv-footer-row{display:grid}
-      .inv-top-row{grid-template-columns:40% 60%;border-bottom:1px solid #000}
-      .inv-buyer-row{grid-template-columns:40% 60%;border-bottom:1px solid #000}
+      .inv-top-row{grid-template-columns:30% 70%;border-bottom:1px solid #000}
+      .inv-buyer-row{grid-template-columns:30% 70%;border-bottom:1px solid #000}
       .inv-totals-row{grid-template-columns:55% 45%;border-bottom:1px solid #000}
       .inv-footer-row{grid-template-columns:55% 45%}
       .inv-seller{padding:10px 12px;border-right:1px solid #000;font-size:11px}
