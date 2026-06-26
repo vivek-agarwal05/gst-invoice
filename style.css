@@ -218,7 +218,7 @@ nav { padding: 18px 0; }
   margin-bottom: 0; letter-spacing: 1px; padding-bottom: 6px;
 }
 .inv-outer { border: 1.5px solid #000; }
-.inv-top-row { display: grid; grid-template-columns: 40% 60%; border-bottom: 1px solid #000; }
+.inv-top-row { display: grid; grid-template-columns: 30% 70%; border-bottom: 1px solid #000; }
 .inv-seller {
   padding: 10px 12px; border-right: 1px solid #000;
   font-size: 11px;
@@ -235,7 +235,7 @@ nav { padding: 18px 0; }
 .inv-meta-label { font-size: 9.5px; color: #555; margin-bottom: 1px; }
 .inv-meta-value { font-weight: 600; }
 
-.inv-buyer-row { display: grid; grid-template-columns: 40% 60%; border-bottom: 1px solid #000; }
+.inv-buyer-row { display: grid; grid-template-columns: 30% 70%; border-bottom: 1px solid #000; }
 .inv-buyer { padding: 10px 12px; border-right: 1px solid #000; font-size: 11px; }
 .inv-buyer .b-label { font-size: 10px; color: #444; margin-bottom: 3px; }
 .inv-buyer .b-name { font-weight: 700; font-size: 12px; }
