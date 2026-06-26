@@ -262,7 +262,7 @@ nav { padding: 18px 0; }
 }
 
 /* Totals section */
-.inv-totals-row { display: grid; grid-template-columns: 55% 45%; border-bottom: 1px solid #000; }
+.inv-totals-row { display: grid; grid-template-columns: 40% 60%; border-bottom: 1px solid #000; }
 .inv-words { padding: 8px 12px; font-size: 10.5px; border-right: 1px solid #000; }
 .inv-words .w-label { font-size: 9.5px; color: #555; margin-bottom: 2px; }
 .inv-words .w-amount { font-weight: 700; font-size: 11px; }
@@ -275,7 +275,7 @@ nav { padding: 18px 0; }
 .inv-tax-table td { border: 1px solid #ccc; padding: 4px 6px; }
 
 /* Footer */
-.inv-footer-row { display: grid; grid-template-columns: 55% 45%; }
+.inv-footer-row { display: grid; grid-template-columns: 40% 60%; }
 .inv-decl { padding: 10px 12px; font-size: 10.5px; border-right: 1px solid #000; }
 .inv-decl .d-label { font-size: 9.5px; color: #555; margin-bottom: 3px; font-weight: 600; }
 .inv-sig { padding: 10px 12px; text-align: right; font-size: 10.5px; }
