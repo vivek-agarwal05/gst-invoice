@@ -350,7 +350,7 @@ function buildInvoiceHTML() {
   let taxBreakHTML = '';
   if (gstMode === 'cgst_sgst' && gstRate > 0) {
     taxBreakHTML = `
-      <tr><th>HSN/SAC</th><th>Taxable Value</th><th>CGST %</th><th>CGST Amt</th><th>SGST %</th><th>SGST Amt</th><th>Total Tax</th></tr>
+      <tr><th style="width:14%">HSN/SAC</th><th style="width:20%">Taxable Value</th><th style="width:9%">CGST %</th><th style="width:16%">CGST Amt</th><th style="width:9%">SGST %</th><th style="width:16%">SGST Amt</th><th style="width:16%">Total Tax</th></tr>
       ${prodData.map(p => {
         const pTaxable = p.amount;
         const pCGST    = pTaxable * (half/100);
@@ -374,7 +374,7 @@ function buildInvoiceHTML() {
       </tr>`;
   } else if (gstMode === 'igst' && gstRate > 0) {
     taxBreakHTML = `
-      <tr><th>HSN/SAC</th><th>Taxable Value</th><th>IGST %</th><th>IGST Amount</th><th>Total Tax</th></tr>
+      <tr><th style="width:16%">HSN/SAC</th><th style="width:26%">Taxable Value</th><th style="width:12%">IGST %</th><th style="width:23%">IGST Amount</th><th style="width:23%">Total Tax</th></tr>
       ${prodData.map(p => {
         const pIGST = p.amount * (gstRate/100);
         return `<tr>
@@ -512,15 +512,15 @@ function buildInvoiceHTML() {
       <table class="inv-prod-table">
         <thead>
           <tr>
-            <th style="width:32px;text-align:center">Sl<br>No.</th>
-            <th>Description of Goods</th>
-            <th style="width:80px;text-align:center">HSN/SAC</th>
-            <th style="width:90px;text-align:right">Quantity</th>
-            <th style="width:60px;text-align:right">Rate<br>(Incl.Tax)</th>
-            <th style="width:45px;text-align:center">per</th>
-            <th style="width:85px;text-align:right">Rate</th>
-            <th style="width:90px;text-align:right">Amount</th>
-            <th style="width:45px;text-align:center">VAT<br>%</th>
+            <th style="width:4%;text-align:center">Sl<br>No.</th>
+            <th style="width:38%">Description of Goods</th>
+            <th style="width:9%;text-align:center">HSN/SAC</th>
+            <th style="width:8%;text-align:right">Quantity</th>
+            <th style="width:9%;text-align:right">Rate<br>(Incl.Tax)</th>
+            <th style="width:5%;text-align:center">per</th>
+            <th style="width:9%;text-align:right">Rate</th>
+            <th style="width:13%;text-align:right">Amount</th>
+            <th style="width:5%;text-align:center">VAT<br>%</th>
           </tr>
         </thead>
         <tbody>
@@ -634,8 +634,7 @@ function generatePDF() {
 
   // Build a clean standalone div for pdf
   const wrapper = document.createElement('div');
-  // ADDED: position: absolute and negative coordinates to prevent screen width constraints
-  wrapper.style.cssText = 'position:absolute; top:-9999px; left:-9999px; background:#fff;padding:0;margin:0;width:794px;font-family:Arial,sans-serif;font-size:11px;color:#000;line-height:1.35;box-sizing:border-box;';
+  wrapper.style.cssText = 'position:fixed;top:0;left:-10000px;z-index:-1;background:#fff;padding:0;margin:0;width:794px;font-family:Arial,sans-serif;font-size:11px;color:#000;line-height:1.35';
   wrapper.innerHTML = buildInvoiceHTML();
   document.body.appendChild(wrapper);
 
@@ -643,8 +642,7 @@ function generatePDF() {
     margin:      [8, 8, 8, 8],
     filename:    invNo + '.pdf',
     image:       { type: 'jpeg', quality: 0.98 },
-    // ADDED: windowWidth: 800 to ensure the canvas renders the full width
-    html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 800 },
+    html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
     jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
@@ -660,6 +658,7 @@ function generatePDF() {
       alert('PDF error: ' + err.message);
     });
 }
+
 // ── Print ──────────────────────────────────────────────────
 function printInvoice() {
   if (!validateForm()) return;
@@ -668,13 +667,13 @@ function printInvoice() {
   win.document.write(`<!DOCTYPE html><html><head>
     <title>Invoice</title>
     <style>
-      body{font-family:Arial,sans-serif;font-size:11px;color:#000;margin:0;padding:16px}
-      .inv-outer{border:1.5px solid #000}
+      body{font-family:Arial,sans-serif;font-size:11px;color:#000;margin:0;padding:16px;max-width:794px}
+      .inv-outer{border:1.5px solid #000;max-width:100%;overflow-x:hidden}
       .inv-top-row,.inv-buyer-row,.inv-totals-row,.inv-footer-row{display:grid}
-      .inv-top-row{grid-template-columns:30% 70%;border-bottom:1px solid #000}
-      .inv-buyer-row{grid-template-columns:30% 70%;border-bottom:1px solid #000}
-      .inv-totals-row{grid-template-columns:40% 60%;border-bottom:1px solid #000}
-      .inv-footer-row{grid-template-columns:40% 60%}
+      .inv-top-row{grid-template-columns:40% 60%;border-bottom:1px solid #000}
+      .inv-buyer-row{grid-template-columns:40% 60%;border-bottom:1px solid #000}
+      .inv-totals-row{grid-template-columns:45% 55%;border-bottom:1px solid #000}
+      .inv-footer-row{grid-template-columns:55% 45%}
       .inv-seller{padding:10px 12px;border-right:1px solid #000;font-size:11px}
       .inv-seller .co-name{font-weight:700;font-size:12px;margin-bottom:4px}
       .inv-seller .gst-line{margin-top:6px;font-weight:700}
@@ -689,20 +688,20 @@ function printInvoice() {
       .inv-buyer .b-name{font-weight:700;font-size:12px}
       .inv-buyer .b-gst{margin-top:3px;font-size:10.5px}
       .inv-terms{padding:6px 12px;border-bottom:1px solid #000;font-size:10.5px}
-      .inv-prod-table{width:100%;border-collapse:collapse;border-bottom:1px solid #000}
-      .inv-prod-table th{border-bottom:1px solid #000;border-right:1px solid #000;padding:6px 7px;text-align:left;font-size:10.5px;background:#f8f8f8}
+      .inv-prod-table{width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;border-bottom:1px solid #000}
+      .inv-prod-table th{border-bottom:1px solid #000;border-right:1px solid #000;padding:6px 5px;text-align:left;font-size:10px;background:#f8f8f8;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word}
       .inv-prod-table th:last-child{border-right:none}
-      .inv-prod-table td{border-bottom:1px solid #ccc;border-right:1px solid #ccc;padding:5px 7px;font-size:10.5px;vertical-align:top}
+      .inv-prod-table td{border-bottom:1px solid #ccc;border-right:1px solid #ccc;padding:5px 5px;font-size:10px;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word}
       .inv-prod-table td:last-child{border-right:none}
-      .inv-prod-table .charge-row td{border-bottom:none;font-size:10.5px}
-      .inv-prod-table .total-row td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;font-weight:700;font-size:11px}
-      .inv-words{padding:8px 12px;font-size:10.5px;border-right:1px solid #000}
+      .inv-prod-table .charge-row td{border-bottom:none;font-size:10px}
+      .inv-prod-table .total-row td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;font-weight:700;font-size:10.5px}
+      .inv-words{padding:8px 12px;font-size:10.5px;border-right:1px solid #000;overflow-wrap:break-word}
       .inv-words .w-label{font-size:9.5px;color:#555;margin-bottom:2px}
       .inv-words .w-amount{font-weight:700;font-size:11px}
-      .inv-tax-breakup{padding:6px 8px;font-size:10.5px}
-      .inv-tax-table{width:100%;border-collapse:collapse;font-size:10.5px}
-      .inv-tax-table th{background:#f0f0f0;border:1px solid #ccc;padding:4px 6px;font-size:10px;text-align:left}
-      .inv-tax-table td{border:1px solid #ccc;padding:4px 6px}
+      .inv-tax-breakup{padding:6px 8px;font-size:9px;max-width:100%;overflow:hidden}
+      .inv-tax-table{width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;font-size:9px}
+      .inv-tax-table th{background:#f0f0f0;border:1px solid #ccc;padding:3px 4px;font-size:8.5px;text-align:left;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word}
+      .inv-tax-table td{border:1px solid #ccc;padding:3px 4px;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word}
       .inv-decl{padding:10px 12px;font-size:10.5px;border-right:1px solid #000}
       .inv-decl .d-label{font-size:9.5px;color:#555;margin-bottom:3px;font-weight:600}
       .inv-sig{padding:10px 12px;text-align:right;font-size:10.5px}
