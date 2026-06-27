@@ -212,13 +212,17 @@ nav { padding: 18px 0; }
   line-height: 1.35;
   background: #fff;
   padding: 24px;
+  width: 794px;
+  max-width: 794px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 .inv-title {
   text-align: center; font-size: 15px; font-weight: 700;
   margin-bottom: 0; letter-spacing: 1px; padding-bottom: 6px;
 }
-.inv-outer { border: 1.5px solid #000; }
-.inv-top-row { display: grid; grid-template-columns: 30% 70%; border-bottom: 1px solid #000; }
+.inv-outer { border: 1.5px solid #000; max-width: 100%; overflow-x: hidden; }
+.inv-top-row { display: grid; grid-template-columns: 40% 60%; border-bottom: 1px solid #000; }
 .inv-seller {
   padding: 10px 12px; border-right: 1px solid #000;
   font-size: 11px;
@@ -235,7 +239,7 @@ nav { padding: 18px 0; }
 .inv-meta-label { font-size: 9.5px; color: #555; margin-bottom: 1px; }
 .inv-meta-value { font-weight: 600; }
 
-.inv-buyer-row { display: grid; grid-template-columns: 30% 70%; border-bottom: 1px solid #000; }
+.inv-buyer-row { display: grid; grid-template-columns: 40% 60%; border-bottom: 1px solid #000; }
 .inv-buyer { padding: 10px 12px; border-right: 1px solid #000; font-size: 11px; }
 .inv-buyer .b-label { font-size: 10px; color: #444; margin-bottom: 3px; }
 .inv-buyer .b-name { font-weight: 700; font-size: 12px; }
@@ -244,38 +248,44 @@ nav { padding: 18px 0; }
 .inv-terms { padding: 6px 12px; border-bottom: 1px solid #000; font-size: 10.5px; }
 
 /* Product table inside invoice */
-.inv-prod-table { width: 100%; border-collapse: collapse; border-bottom: 1px solid #000; }
+.inv-prod-table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; border-bottom: 1px solid #000; }
 .inv-prod-table th {
   border-bottom: 1px solid #000; border-right: 1px solid #000;
-  padding: 6px 7px; text-align: left; font-size: 10.5px; background: #f8f8f8;
+  padding: 6px 5px; text-align: left; font-size: 10px; background: #f8f8f8;
+  word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;
 }
 .inv-prod-table th:last-child { border-right: none; }
 .inv-prod-table td {
   border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;
-  padding: 5px 7px; font-size: 10.5px; vertical-align: top;
+  padding: 5px 5px; font-size: 10px; vertical-align: top;
+  word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;
 }
 .inv-prod-table td:last-child { border-right: none; }
-.inv-prod-table .charge-row td { border-bottom: none; font-size: 10.5px; }
+.inv-prod-table .charge-row td { border-bottom: none; font-size: 10px; }
 .inv-prod-table .total-row td {
   border-top: 1.5px solid #000; border-bottom: 1.5px solid #000;
-  font-weight: 700; font-size: 11px;
+  font-weight: 700; font-size: 10.5px;
 }
 
 /* Totals section */
-.inv-totals-row { display: grid; grid-template-columns: 40% 60%; border-bottom: 1px solid #000; }
-.inv-words { padding: 8px 12px; font-size: 10.5px; border-right: 1px solid #000; }
+.inv-totals-row { display: grid; grid-template-columns: 45% 55%; border-bottom: 1px solid #000; }
+.inv-words { padding: 8px 12px; font-size: 10.5px; border-right: 1px solid #000; overflow-wrap: break-word; }
 .inv-words .w-label { font-size: 9.5px; color: #555; margin-bottom: 2px; }
 .inv-words .w-amount { font-weight: 700; font-size: 11px; }
-.inv-tax-breakup { padding: 6px 8px; font-size: 10.5px; }
-.inv-tax-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+.inv-tax-breakup { padding: 6px 8px; font-size: 9px; max-width: 100%; overflow: hidden; }
+.inv-tax-table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 9px; }
 .inv-tax-table th {
-  background: #f0f0f0; border: 1px solid #ccc; padding: 4px 6px;
-  font-size: 10px; text-align: left;
+  background: #f0f0f0; border: 1px solid #ccc; padding: 3px 4px;
+  font-size: 8.5px; text-align: left;
+  word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;
 }
-.inv-tax-table td { border: 1px solid #ccc; padding: 4px 6px; }
+.inv-tax-table td {
+  border: 1px solid #ccc; padding: 3px 4px;
+  word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;
+}
 
 /* Footer */
-.inv-footer-row { display: grid; grid-template-columns: 40% 60%; }
+.inv-footer-row { display: grid; grid-template-columns: 55% 45%; }
 .inv-decl { padding: 10px 12px; font-size: 10.5px; border-right: 1px solid #000; }
 .inv-decl .d-label { font-size: 9.5px; color: #555; margin-bottom: 3px; font-weight: 600; }
 .inv-sig { padding: 10px 12px; text-align: right; font-size: 10.5px; }
