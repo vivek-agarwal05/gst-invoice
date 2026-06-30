@@ -89,6 +89,10 @@
                 <input id="sellerState" type="text" placeholder="e.g. Haryana, Code: 06">
               </div>
             </div>
+            <div class="field-group">
+              <label>Contact No.</label>
+              <input id="contactNumber" type="text" placeholder="Phone number">
+            </div>
           </div>
           <!-- RIGHT: Invoice meta -->
           <div>
@@ -98,14 +102,14 @@
                 <input id="invoiceNumber" type="text" placeholder="e.g. INV-001">
               </div>
               <div class="field-group">
-                <label>Date *</label>
-                <input id="invoiceDate" type="date">
+                <label>e-Way Bill No.</label>
+                <input id="ewayBill" type="text" placeholder="">
               </div>
             </div>
             <div class="field-row-2">
               <div class="field-group">
-                <label>Delivery Note</label>
-                <input id="deliveryNote" type="text" placeholder="">
+                <label>Date *</label>
+                <input id="invoiceDate" type="date">
               </div>
               <div class="field-group">
                 <label>Mode / Terms of Payment</label>
@@ -121,8 +125,8 @@
             </div>
             <div class="field-row-2">
               <div class="field-group">
-                <label>Supplier's Ref.</label>
-                <input id="supplierRef" type="text" placeholder="">
+                <label>Delivery Note</label>
+                <input id="deliveryNote" type="text" placeholder="">
               </div>
               <div class="field-group">
                 <label>Other References</label>
@@ -131,8 +135,18 @@
             </div>
             <div class="field-row-2">
               <div class="field-group">
+                <label>Reference No. &amp; Date.</label>
+                <input id="supplierRef" type="text" placeholder="e.g. ST/2026-27/045 dt. 27-Jun-26">
+              </div>
+              <div class="field-group">
                 <label>Buyer's Order No.</label>
                 <input id="buyerOrderNo" type="text" placeholder="">
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Dispatch Doc No.</label>
+                <input id="despatchDocNo" type="text" placeholder="">
               </div>
               <div class="field-group">
                 <label>Dated</label>
@@ -141,8 +155,8 @@
             </div>
             <div class="field-row-2">
               <div class="field-group">
-                <label>Despatch Document No.</label>
-                <input id="despatchDocNo" type="text" placeholder="">
+                <label>Dispatched Through</label>
+                <input id="despatchThrough" type="text" placeholder="e.g. BALODA">
               </div>
               <div class="field-group">
                 <label>Delivery Note Date</label>
@@ -151,12 +165,22 @@
             </div>
             <div class="field-row-2">
               <div class="field-group">
-                <label>Despatched Through</label>
-                <input id="despatchThrough" type="text" placeholder="e.g. BALODA">
+                <label>Bill of Lading/LR-RR No.</label>
+                <input id="billOfLading" type="text" placeholder="">
               </div>
               <div class="field-group">
                 <label>Destination</label>
                 <input id="destination" type="text" placeholder="e.g. BALODA">
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label>Motor Vehicle No.</label>
+                <input id="vehicleNo" type="text" placeholder="e.g. HR66B1618">
+              </div>
+              <div class="field-group">
+                <label></label>
+                <input type="text" disabled style="visibility:hidden">
               </div>
             </div>
             <div class="field-group">
@@ -172,6 +196,18 @@
         <div class="card-title">Buyer (Consignee / Bill To)</div>
         <div class="two-col">
           <div>
+            <div class="field-group"><label>Consignee (Ship To)</label>
+              <input id="consigneeName" type="text" placeholder="Leave all consignee fields blank to omit this box"></div>
+            <div class="field-group"><label>Consignee Address</label>
+              <textarea id="consigneeAddress" rows="3" placeholder="Fill in if shipping to a different address than the buyer"></textarea></div>
+            <div class="field-row-2">
+              <div class="field-group"><label>Consignee GSTIN</label>
+                <input id="consigneeGST" type="text" placeholder=""></div>
+              <div class="field-group"><label>State Name &amp; Code</label>
+                <input id="consigneeState" type="text" placeholder=""></div>
+            </div>
+          </div>
+          <div>
             <div class="field-group"><label>Buyer Label</label>
               <input id="buyerLabel" type="text" value="Buyer (Bill to)" placeholder="Buyer (Bill to)"></div>
             <div class="field-group"><label>Buyer Name *</label>
@@ -184,24 +220,6 @@
               <div class="field-group"><label>State Name &amp; Code</label>
                 <input id="buyerState" type="text" placeholder="e.g. Rajasthan, Code: 08"></div>
             </div>
-          </div>
-          <div>
-            <div class="field-group"><label>Consignee (Ship To)</label>
-              <input id="consigneeName" type="text" placeholder="Same as buyer or different"></div>
-            <div class="field-group"><label>Consignee Address</label>
-              <textarea id="consigneeAddress" rows="3" placeholder="Leave blank if same as buyer"></textarea></div>
-            <div class="field-row-2">
-              <div class="field-group"><label>Consignee GSTIN</label>
-                <input id="consigneeGST" type="text" placeholder=""></div>
-              <div class="field-group"><label>State Name &amp; Code</label>
-                <input id="consigneeState" type="text" placeholder=""></div>
-            </div>
-            <div class="field-group"><label>Contact No. *</label>
-              <input id="contactNumber" type="text" placeholder="Phone number"></div>
-            <div class="field-group"><label>E-Way Bill No.</label>
-              <input id="ewayBill" type="text" placeholder=""></div>
-            <div class="field-group"><label>Motor Vehicle No.</label>
-              <input id="vehicleNo" type="text" placeholder="e.g. HR66B1618"></div>
           </div>
         </div>
       </div>
@@ -218,10 +236,8 @@
                 <th style="width:90px">HSN/SAC</th>
                 <th style="width:100px">Quantity</th>
                 <th style="width:60px">Per</th>
-                <th style="width:110px">Rate (Incl. of Tax)</th>
-                <th style="width:80px">Rate</th>
+                <th style="width:100px">Rate</th>
                 <th style="width:110px">Amount</th>
-                <th style="width:60px">VAT %</th>
                 <th style="width:50px">Del</th>
               </tr>
             </thead>
@@ -288,6 +304,15 @@
                    oninput="applyCustomRate(this.value)">
           </div>
           <input type="hidden" id="gstRate" value="0">
+        </div>
+
+        <!-- Round-off toggle -->
+        <div class="field-group" style="margin-top:10px">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:normal">
+            <input type="checkbox" id="enableRoundOff" checked style="width:auto">
+            Round off Grand Total to the nearest rupee
+          </label>
+          <div style="font-size:11px;color:#777;margin-top:2px">Uncheck to show the exact total with paise (no "Round Off" line) — matches invoices where Tally's rounding rule is disabled.</div>
         </div>
 
         <!-- Live summary -->

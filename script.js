@@ -73,34 +73,18 @@ function addProductRow() {
       </div>
     </td>
     <td><input type="text"   class="p-per"   placeholder="Nos" style="width:45px"></td>
-    <td><input type="number" class="p-rate-incl" placeholder="0.00" step="0.01" min="0" oninput="calcRow(this);recalc()" style="width:90px"></td>
-    <td><input type="number" class="p-rate-excl" placeholder="0.00" step="0.01" min="0" readonly style="background:#f5f5f5"></td>
+    <td><input type="number" class="p-rate"  placeholder="0.00" step="0.01" min="0" oninput="calcRow(this);recalc()" style="width:90px"></td>
     <td><input type="number" class="p-amount"    placeholder="0.00" readonly style="background:#f5f5f5"></td>
-    <td>
-      <select class="p-vat" onchange="calcRow(this);recalc()" style="width:55px">
-        <option value="0">0%</option>
-        <option value="5">5%</option>
-        <option value="12">12%</option>
-        <option value="18">18%</option>
-        <option value="28">28%</option>
-      </select>
-    </td>
     <td><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
   tbody.appendChild(tr);
 }
 
 function calcRow(input) {
   const tr  = input.closest('tr');
-  const qty        = parseFloat(tr.querySelector('.p-qty').value)       || 0;
-  const rateIncl   = parseFloat(tr.querySelector('.p-rate-incl').value) || 0;
-  const vatPct     = parseFloat(tr.querySelector('.p-vat').value)       || 0;
-
-  // rate excl of tax  = rateIncl / (1 + vatPct/100)
-  const rateExcl = vatPct > 0 ? rateIncl / (1 + vatPct / 100) : rateIncl;
-  const amount   = qty * rateExcl;
-
-  tr.querySelector('.p-rate-excl').value = rateExcl.toFixed(2);
-  tr.querySelector('.p-amount').value    = amount.toFixed(2);
+  const qty  = parseFloat(tr.querySelector('.p-qty').value)  || 0;
+  const rate = parseFloat(tr.querySelector('.p-rate').value) || 0;
+  const amount = qty * rate;
+  tr.querySelector('.p-amount').value = amount.toFixed(2);
 }
 
 function delRow(btn) {
@@ -232,6 +216,17 @@ function numToWords(num) {
   return result.trim();
 }
 
+// Full amount-in-words including paise, e.g. "Fourteen Lakh ... and Thirty Eight paise Only"
+function amountWordsWithPaise(amount) {
+  const rupees = Math.floor(amount + 1e-9);
+  const paise  = Math.round((amount - rupees) * 100);
+  const rupeeWords = numToWords(rupees);
+  if (paise > 0) {
+    return `${rupeeWords} and ${numToWords(paise)} paise`;
+  }
+  return rupeeWords;
+}
+
 // ── Build invoice HTML ─────────────────────────────────────
 function buildInvoiceHTML() {
   // collect values
@@ -266,6 +261,7 @@ function buildInvoiceHTML() {
   const terms     = v('termsOfDelivery');
   const vehicleNo = v('vehicleNo');
   const ewayBill  = v('ewayBill');
+  const billOfLading = v('billOfLading');
   const contactNo = v('contactNumber');
 
   const bankName   = v('bankName');
@@ -282,17 +278,15 @@ function buildInvoiceHTML() {
   let subtotal = 0;
   const prodData = [];
   rows.forEach((tr, i) => {
-    const desc     = tr.querySelector('.p-desc').value;
-    const hsn      = tr.querySelector('.p-hsn').value;
-    const qty      = parseFloat(tr.querySelector('.p-qty').value) || 0;
-    const unit     = tr.querySelector('.p-unit').value || '';
-    const per      = tr.querySelector('.p-per').value  || unit;
-    const rateIncl = parseFloat(tr.querySelector('.p-rate-incl').value) || 0;
-    const rateExcl = parseFloat(tr.querySelector('.p-rate-excl').value) || 0;
-    const amount   = parseFloat(tr.querySelector('.p-amount').value)    || 0;
-    const vatPct   = parseFloat(tr.querySelector('.p-vat').value)       || 0;
+    const desc   = tr.querySelector('.p-desc').value;
+    const hsn    = tr.querySelector('.p-hsn').value;
+    const qty    = parseFloat(tr.querySelector('.p-qty').value) || 0;
+    const unit   = tr.querySelector('.p-unit').value || '';
+    const per    = tr.querySelector('.p-per').value  || unit;
+    const rate   = parseFloat(tr.querySelector('.p-rate').value) || 0;
+    const amount = parseFloat(tr.querySelector('.p-amount').value) || 0;
     subtotal += amount;
-    if (desc || qty) prodData.push({ no: i+1, desc, hsn, qty, unit, per, rateIncl, rateExcl, amount, vatPct });
+    if (desc || qty) prodData.push({ no: i+1, desc, hsn, qty, unit, per, rate, amount });
   });
 
   const loading  = parseFloat(v2('loadingCharges'))  || 0;
@@ -310,9 +304,10 @@ function buildInvoiceHTML() {
     igst = taxable * gstRate / 100;
   }
 
-  const grandTotal = taxable + cgst + sgst + igst;
-  const rounded    = Math.round(grandTotal);
-  const roundOff   = rounded - grandTotal;
+  const grandTotal   = taxable + cgst + sgst + igst;
+  const roundOffOn   = document.getElementById('enableRoundOff') ? document.getElementById('enableRoundOff').checked : true;
+  const rounded      = roundOffOn ? Math.round(grandTotal) : grandTotal;
+  const roundOff     = roundOffOn ? (rounded - grandTotal) : 0;
 
   const totalQtyMap = {};
   prodData.forEach(p => {
@@ -321,8 +316,8 @@ function buildInvoiceHTML() {
   });
   const totalQtyStr = Object.entries(totalQtyMap).map(([u,q]) => `${fmt(q)} ${u}`).join(', ');
 
-  const amountWords   = numToWords(rounded);
-  const taxAmtWords   = numToWords(Math.round(cgst+sgst+igst));
+  const amountWords   = amountWordsWithPaise(rounded);
+  const taxAmtWords   = amountWordsWithPaise(cgst + sgst + igst);
   const half = gstRate / 2;
 
   // product table rows HTML
@@ -332,76 +327,68 @@ function buildInvoiceHTML() {
       <td><strong>${p.desc}</strong></td>
       <td style="text-align:center">${p.hsn}</td>
       <td style="text-align:right">${p.qty ? fmt(p.qty)+' '+p.unit : ''}</td>
-      <td style="text-align:right">${p.rateIncl ? fmt(p.rateIncl) : ''}</td>
+      <td style="text-align:right">${p.rate ? fmt(p.rate) : ''}</td>
       <td style="text-align:center">${p.per}</td>
-      <td style="text-align:right">${p.rateExcl ? fmt(p.rateExcl) : ''}</td>
       <td style="text-align:right">${p.amount ? fmt(p.amount) : ''}</td>
-      <td style="text-align:center">${p.vatPct ? p.vatPct+'%' : ''}</td>
     </tr>`).join('');
 
   // extra charge rows
   let extraHTML = '';
-  if (loading > 0)  extraHTML += `<tr class="charge-row"><td colspan="7" style="text-align:right">LOADING CHARGES</td><td style="text-align:right">${fmt(loading)}</td><td></td></tr>`;
-  if (freight > 0)  extraHTML += `<tr class="charge-row"><td colspan="7" style="text-align:right">FREIGHT</td><td style="text-align:right">${fmt(freight)}</td><td></td></tr>`;
-  if (other   > 0)  extraHTML += `<tr class="charge-row"><td colspan="7" style="text-align:right">OTHER CHARGES</td><td style="text-align:right">${fmt(other)}</td><td></td></tr>`;
-  if (discount > 0) extraHTML += `<tr class="charge-row"><td colspan="7" style="text-align:right">QUALITY ALLOWANCE / DISCOUNT</td><td style="text-align:right">(-) ${fmt(discount)}</td><td></td></tr>`;
+  if (loading > 0)  extraHTML += `<tr class="charge-row"><td colspan="6" style="text-align:right">LOADING CHARGES</td><td style="text-align:right">${fmt(loading)}</td></tr>`;
+  if (freight > 0)  extraHTML += `<tr class="charge-row"><td colspan="6" style="text-align:right">FREIGHT</td><td style="text-align:right">${fmt(freight)}</td></tr>`;
+  if (other   > 0)  extraHTML += `<tr class="charge-row"><td colspan="6" style="text-align:right">OTHER CHARGES</td><td style="text-align:right">${fmt(other)}</td></tr>`;
+  if (discount > 0) extraHTML += `<tr class="charge-row"><td colspan="6" style="text-align:right">QUALITY ALLOWANCE / DISCOUNT</td><td style="text-align:right">(-) ${fmt(discount)}</td></tr>`;
 
   // GST breakdown for footer table
   let taxBreakHTML = '';
   if (gstMode === 'cgst_sgst' && gstRate > 0) {
     taxBreakHTML = `
-      <tr><th style="width:14%">HSN/SAC</th><th style="width:20%">Taxable Value</th><th style="width:9%">CGST %</th><th style="width:16%">CGST Amt</th><th style="width:9%">SGST %</th><th style="width:16%">SGST Amt</th><th style="width:16%">Total Tax</th></tr>
-      ${prodData.map(p => {
-        const pTaxable = p.amount;
-        const pCGST    = pTaxable * (half/100);
-        const pSGST    = pTaxable * (half/100);
-        return `<tr>
-          <td>${p.hsn}</td>
-          <td style="text-align:right">${fmt(pTaxable)}</td>
-          <td style="text-align:center">${half}%</td>
-          <td style="text-align:right">${fmt(pCGST)}</td>
-          <td style="text-align:center">${half}%</td>
-          <td style="text-align:right">${fmt(pSGST)}</td>
-          <td style="text-align:right">${fmt(pCGST+pSGST)}</td>
-        </tr>`;
-      }).join('')}
-      <tr style="font-weight:700;border-top:1px solid #000">
-        <td>Total</td>
+      <tr>
+        <th style="width:18%">Taxable<br>Value</th>
+        <th style="width:14%">Central Tax<br>Rate</th>
+        <th style="width:17%">Central Tax<br>Amount</th>
+        <th style="width:14%">State Tax<br>Rate</th>
+        <th style="width:17%">State Tax<br>Amount</th>
+        <th style="width:20%">Total<br>Tax Amount</th>
+      </tr>
+      <tr>
         <td style="text-align:right">${fmt(taxable)}</td>
+        <td style="text-align:center">${half}%</td>
+        <td style="text-align:right">${fmt(cgst)}</td>
+        <td style="text-align:center">${half}%</td>
+        <td style="text-align:right">${fmt(sgst)}</td>
+        <td style="text-align:right">${fmt(cgst+sgst)}</td>
+      </tr>
+      <tr style="font-weight:700;border-top:1px solid #000">
+        <td>Total:</td>
         <td></td><td style="text-align:right">${fmt(cgst)}</td>
         <td></td><td style="text-align:right">${fmt(sgst)}</td>
         <td style="text-align:right">${fmt(cgst+sgst)}</td>
       </tr>`;
   } else if (gstMode === 'igst' && gstRate > 0) {
     taxBreakHTML = `
-      <tr><th style="width:16%">HSN/SAC</th><th style="width:26%">Taxable Value</th><th style="width:12%">IGST %</th><th style="width:23%">IGST Amount</th><th style="width:23%">Total Tax</th></tr>
-      ${prodData.map(p => {
-        const pIGST = p.amount * (gstRate/100);
-        return `<tr>
-          <td>${p.hsn}</td>
-          <td style="text-align:right">${fmt(p.amount)}</td>
-          <td style="text-align:center">${gstRate}%</td>
-          <td style="text-align:right">${fmt(pIGST)}</td>
-          <td style="text-align:right">${fmt(pIGST)}</td>
-        </tr>`;
-      }).join('')}
-      <tr style="font-weight:700;border-top:1px solid #000">
-        <td>Total</td>
+      <tr>
+        <th style="width:30%">Taxable Value</th>
+        <th style="width:20%">IGST Rate</th>
+        <th style="width:25%">IGST Amount</th>
+        <th style="width:25%">Total Tax Amount</th>
+      </tr>
+      <tr>
         <td style="text-align:right">${fmt(taxable)}</td>
+        <td style="text-align:center">${gstRate}%</td>
+        <td style="text-align:right">${fmt(igst)}</td>
+        <td style="text-align:right">${fmt(igst)}</td>
+      </tr>
+      <tr style="font-weight:700;border-top:1px solid #000">
+        <td>Total:</td>
         <td></td>
         <td style="text-align:right">${fmt(igst)}</td>
         <td style="text-align:right">${fmt(igst)}</td>
       </tr>`;
   }
 
-  // consignee section
-  const consigneeSection = consigneeName ? `
-    <div style="font-size:10px;color:#555;margin-bottom:3px">Consignee (Ship to)</div>
-    <div style="font-weight:700">${consigneeName}</div>
-    <div style="font-size:10.5px;white-space:pre-wrap">${consigneeAddr}</div>
-    ${consigneeGST   ? `<div>GSTIN/UIN : ${consigneeGST}</div>` : ''}
-    ${consigneeState ? `<div>State Name : ${consigneeState}</div>` : ''}
-    <hr style="margin:6px 0;border:none;border-top:1px solid #ccc">` : '';
+  // consignee — shown if ANY consignee field was filled in (not just Name)
+  const hasConsignee = consigneeName || consigneeAddr || consigneeGST || consigneeState;
 
   // logo & sig
   const logoHTML = logoB64 ? `<img src="${logoB64}" style="max-height:50px;max-width:130px;object-fit:contain;display:block;margin-bottom:6px">` : '';
@@ -415,96 +402,67 @@ function buildInvoiceHTML() {
 
     <div class="inv-outer">
 
-      <!-- TOP: Seller | Invoice Meta -->
-      <div class="inv-top-row">
+      <!-- HEADER: Seller/Consignee/Buyer (stacked, left) | Full Meta Grid (right) -->
+      <div class="inv-header-row">
 
-        <!-- Seller -->
-        <div class="inv-seller">
-          <div class="co-name">${sellerName}</div>
-          <div style="white-space:pre-wrap;font-size:10.5px">${sellerAddr}</div>
-          ${sellerGST   ? `<div class="gst-line">GSTIN/UIN: ${sellerGST}</div>` : ''}
-          ${sellerState ? `<div style="font-size:10.5px">State Name : ${sellerState}</div>` : ''}
+        <!-- LEFT: Seller, then Consignee, then Buyer -->
+        <div class="inv-left-col">
+          <div class="inv-seller">
+            <div class="co-name">${sellerName}</div>
+            <div style="white-space:pre-wrap;font-size:10.5px">${sellerAddr}</div>
+            ${sellerGST   ? `<div class="gst-line">GSTIN/UIN: ${sellerGST}</div>` : ''}
+            ${sellerState ? `<div style="font-size:10.5px">State Name : ${sellerState}</div>` : ''}
+            ${contactNo   ? `<div style="font-size:10.5px">Contact : ${contactNo}</div>` : ''}
+          </div>
+          ${hasConsignee ? `
+          <div class="inv-block-divider"></div>
+          <div class="inv-buyer">
+            <div class="b-label">Consignee (Ship to)</div>
+            <div class="b-name">${consigneeName}</div>
+            <div style="white-space:pre-wrap;font-size:10.5px;margin-top:3px">${consigneeAddr}</div>
+            <div class="b-gst">
+              ${consigneeGST   ? `GSTIN/UIN : ${consigneeGST}` : ''}
+              ${consigneeState ? `<br>State Name : ${consigneeState}` : ''}
+            </div>
+          </div>` : ''}
+          <div class="inv-block-divider"></div>
+          <div class="inv-buyer">
+            <div class="b-label">${buyerLabel}</div>
+            <div class="b-name">${buyerName}</div>
+            <div style="white-space:pre-wrap;font-size:10.5px;margin-top:3px">${buyerAddr}</div>
+            <div class="b-gst">
+              ${buyerGST   ? `GSTIN/UIN : ${buyerGST}` : ''}
+              ${buyerState ? `<br>State Name : ${buyerState}` : ''}
+            </div>
+          </div>
         </div>
 
-        <!-- Invoice Meta Grid -->
+        <!-- RIGHT: Full Invoice Meta Grid -->
         <div class="inv-meta-grid">
-          <div class="inv-meta-cell">
-            <div class="inv-meta-label">Invoice No.</div>
-            <div class="inv-meta-value">${invNo}</div>
-          </div>
-          <div class="inv-meta-cell right-col">
-            <div class="inv-meta-label">Dated</div>
-            <div class="inv-meta-value">${invDate}</div>
-          </div>
-
-          <div class="inv-meta-cell">
-            <div class="inv-meta-label">Delivery Note</div>
-            <div class="inv-meta-value">${delivNote}</div>
-          </div>
-          <div class="inv-meta-cell right-col">
-            <div class="inv-meta-label">Mode/Terms of Payment</div>
-            <div class="inv-meta-value">${payMode}</div>
-          </div>
-
-          <div class="inv-meta-cell">
-            <div class="inv-meta-label">Supplier's Ref.</div>
-            <div class="inv-meta-value">${suppRef}</div>
-          </div>
-          <div class="inv-meta-cell right-col">
-            <div class="inv-meta-label">Other References</div>
-            <div class="inv-meta-value">${otherRef}</div>
-          </div>
-
-          <div class="inv-meta-cell">
-            <div class="inv-meta-label">Buyer's Order No.</div>
-            <div class="inv-meta-value">${buyerOrd}</div>
-          </div>
-          <div class="inv-meta-cell right-col">
-            <div class="inv-meta-label">Dated</div>
-            <div class="inv-meta-value">${buyerOrdD}</div>
-          </div>
-
-          <div class="inv-meta-cell">
-            <div class="inv-meta-label">Despatch Document No.</div>
-            <div class="inv-meta-value">${despDocNo}</div>
-          </div>
-          <div class="inv-meta-cell right-col">
-            <div class="inv-meta-label">Delivery Note Date</div>
-            <div class="inv-meta-value">${delivNoteD}</div>
-          </div>
-
-          <div class="inv-meta-cell">
-            <div class="inv-meta-label">Despatched through</div>
-            <div class="inv-meta-value">${despThru}</div>
-          </div>
-          <div class="inv-meta-cell right-col">
-            <div class="inv-meta-label">Destination</div>
-            <div class="inv-meta-value">${dest}</div>
-          </div>
-
+          ${[
+            [ 'Invoice No.', invNo, 'e-Way Bill No.', ewayBill, true ],
+            [ 'Dated', invDate, 'Mode/Terms of Payment', payMode, true ],
+            [ 'Delivery Note', delivNote, 'Other References', otherRef, false ],
+            [ 'Reference No. & Date.', suppRef, "Buyer's Order No.", buyerOrd, false ],
+            [ 'Dispatch Doc No.', despDocNo, 'Dated', buyerOrdD, false ],
+            [ 'Dispatched through', despThru, 'Delivery Note Date', delivNoteD, false ],
+            [ 'Bill of Lading/LR-RR No.', billOfLading, 'Destination', dest, false ],
+            [ 'Motor Vehicle No.', vehicleNo, '', '', false ]
+          ].filter(([, lv, , rv, always]) => always || lv || rv)
+           .map(([ll, lv, rl, rv]) => `
+            <div class="inv-meta-cell">
+              <div class="inv-meta-label">${ll}</div>
+              <div class="inv-meta-value">${lv}</div>
+            </div>
+            <div class="inv-meta-cell right-col">
+              <div class="inv-meta-label">${rl}</div>
+              <div class="inv-meta-value">${rv}</div>
+            </div>`).join('')}
+          ${terms ? `
           <div class="inv-meta-cell no-bottom" style="grid-column:1/-1">
             <div class="inv-meta-label">Terms of Delivery</div>
             <div class="inv-meta-value">${terms}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BUYER ROW -->
-      <div class="inv-buyer-row">
-        <div class="inv-buyer">
-          ${consigneeSection}
-          <div class="b-label">${buyerLabel}</div>
-          <div class="b-name">${buyerName}</div>
-          <div style="white-space:pre-wrap;font-size:10.5px;margin-top:3px">${buyerAddr}</div>
-          <div class="b-gst">
-            ${buyerGST   ? `GSTIN/UIN : ${buyerGST}` : ''}
-            ${buyerState ? `<br>State Name : ${buyerState}` : ''}
-          </div>
-        </div>
-        <div style="padding:10px 12px;font-size:10.5px">
-          ${contactNo  ? `<div><strong>Contact No.:</strong> ${contactNo}</div>` : ''}
-          ${ewayBill   ? `<div><strong>E-Way Bill No.:</strong> ${ewayBill}</div>` : ''}
-          ${vehicleNo  ? `<div><strong>Motor Vehicle No.:</strong> ${vehicleNo}</div>` : ''}
+          </div>` : ''}
         </div>
       </div>
 
@@ -512,56 +470,55 @@ function buildInvoiceHTML() {
       <table class="inv-prod-table">
         <thead>
           <tr>
-            <th style="width:4%;text-align:center">Sl<br>No.</th>
-            <th style="width:38%">Description of Goods</th>
-            <th style="width:9%;text-align:center">HSN/SAC</th>
-            <th style="width:8%;text-align:right">Quantity</th>
-            <th style="width:9%;text-align:right">Rate<br>(Incl.Tax)</th>
-            <th style="width:5%;text-align:center">per</th>
-            <th style="width:9%;text-align:right">Rate</th>
-            <th style="width:13%;text-align:right">Amount</th>
-            <th style="width:5%;text-align:center">VAT<br>%</th>
+            <th style="width:5%;text-align:center">Sl<br>No.</th>
+            <th style="width:34%">Description of Goods</th>
+            <th style="width:11%;text-align:center">HSN/SAC</th>
+            <th style="width:13%;text-align:right">Quantity</th>
+            <th style="width:13%;text-align:right">Rate</th>
+            <th style="width:7%;text-align:center">per</th>
+            <th style="width:17%;text-align:right">Amount</th>
           </tr>
         </thead>
         <tbody>
           ${prodRowsHTML}
-          <!-- spacer rows to fill page -->
-          <tr style="height:18px"><td colspan="9"></td></tr>
           ${extraHTML}
           <tr class="charge-row">
-            <td colspan="7" style="text-align:right;padding-right:8px">
-              ${gstMode === 'cgst_sgst' && gstRate > 0 ? `CGST (${half}%)` : ''}
+            <td colspan="4" style="text-align:right;padding-right:8px">
+              ${gstMode === 'cgst_sgst' && gstRate > 0 ? `CGST ${half}%` : ''}
             </td>
+            <td style="text-align:right">${gstMode === 'cgst_sgst' && gstRate > 0 ? `${half.toFixed(2)} %` : ''}</td>
+            <td></td>
             <td style="text-align:right">
               ${gstMode === 'cgst_sgst' && cgst > 0 ? fmt(cgst) : ''}
             </td>
-            <td></td>
           </tr>
           <tr class="charge-row">
-            <td colspan="7" style="text-align:right;padding-right:8px">
-              ${gstMode === 'cgst_sgst' && gstRate > 0 ? `SGST (${half}%)` : ''}
-              ${gstMode === 'igst'      && gstRate > 0 ? `IGST (${gstRate}%)` : ''}
+            <td colspan="4" style="text-align:right;padding-right:8px">
+              ${gstMode === 'cgst_sgst' && gstRate > 0 ? `SGST ${half}%` : ''}
+              ${gstMode === 'igst'      && gstRate > 0 ? `IGST ${gstRate}%` : ''}
             </td>
+            <td style="text-align:right">
+              ${gstMode === 'cgst_sgst' && gstRate > 0 ? `${half.toFixed(2)} %` : ''}
+              ${gstMode === 'igst'      && gstRate > 0 ? `${gstRate.toFixed(2)} %` : ''}
+            </td>
+            <td></td>
             <td style="text-align:right">
               ${gstMode === 'cgst_sgst' && sgst > 0 ? fmt(sgst) : ''}
               ${gstMode === 'igst'      && igst > 0 ? fmt(igst) : ''}
             </td>
-            <td></td>
           </tr>
           ${roundOff !== 0 ? `
           <tr class="charge-row">
-            <td colspan="7" style="text-align:right;padding-right:8px"><strong>Less: ROUND OFF</strong></td>
+            <td colspan="6" style="text-align:right;padding-right:8px"><strong>Less: ROUND OFF</strong></td>
             <td style="text-align:right">(-)${fmt(Math.abs(roundOff))}</td>
-            <td></td>
           </tr>` : ''}
         </tbody>
         <tfoot>
           <tr class="total-row">
             <td colspan="3" style="text-align:center">Total</td>
             <td style="text-align:right">${totalQtyStr}</td>
-            <td colspan="3"></td>
+            <td colspan="2"></td>
             <td style="text-align:right">₹ ${fmt(rounded)}</td>
-            <td></td>
           </tr>
         </tfoot>
       </table>
@@ -643,7 +600,8 @@ function generatePDF() {
     filename:    invNo + '.pdf',
     image:       { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:   { mode: ['css', 'legacy'], avoid: ['tr', '.inv-footer-row', '.inv-totals-row', '.inv-computer'] }
   };
 
   html2pdf()
@@ -669,26 +627,30 @@ function printInvoice() {
     <style>
       body{font-family:Arial,sans-serif;font-size:11px;color:#000;margin:0;padding:16px;max-width:794px}
       .inv-outer{border:1.5px solid #000;max-width:100%;overflow-x:hidden}
-      .inv-top-row,.inv-buyer-row,.inv-totals-row,.inv-footer-row{display:grid}
-      .inv-top-row{grid-template-columns:40% 60%;border-bottom:1px solid #000}
-      .inv-buyer-row{grid-template-columns:40% 60%;border-bottom:1px solid #000}
-      .inv-totals-row{grid-template-columns:45% 55%;border-bottom:1px solid #000}
-      .inv-footer-row{grid-template-columns:55% 45%}
-      .inv-seller{padding:10px 12px;border-right:1px solid #000;font-size:11px}
+      .inv-header-row{display:flex;align-items:flex-start;border-bottom:1px solid #000;position:relative}
+      .inv-header-row::after{content:'';position:absolute;top:0;bottom:0;left:40%;width:0;border-left:1px solid #000}
+      .inv-left-col{width:40%;flex:0 0 40%;display:flex;flex-direction:column}
+      .inv-block-divider{border-top:1px solid #000}
+      .inv-totals-row{display:grid}
+      .inv-footer-row{display:grid}
+      .inv-totals-row{grid-template-columns:45% 55%;border-bottom:1px solid #000;page-break-inside:avoid;break-inside:avoid}
+      .inv-footer-row{grid-template-columns:55% 45%;page-break-inside:avoid;break-inside:avoid}
+      .inv-seller{padding:10px 12px;font-size:11px}
       .inv-seller .co-name{font-weight:700;font-size:12px;margin-bottom:4px}
       .inv-seller .gst-line{margin-top:6px;font-weight:700}
-      .inv-meta-grid{display:grid;grid-template-columns:1fr 1fr}
-      .inv-meta-cell{padding:5px 8px;border-bottom:1px solid #000;font-size:10.5px}
+      .inv-meta-grid{width:60%;flex:0 0 60%;display:grid;grid-template-columns:1fr 1fr;align-content:start}
+      .inv-meta-cell{padding:3.5px 8px;border-bottom:1px solid #000;font-size:10px;line-height:1.25}
       .inv-meta-cell.right-col{border-left:1px solid #000}
       .inv-meta-cell.no-bottom{border-bottom:none}
-      .inv-meta-label{font-size:9.5px;color:#555;margin-bottom:1px}
-      .inv-meta-value{font-weight:600}
-      .inv-buyer{padding:10px 12px;border-right:1px solid #000;font-size:11px}
+      .inv-meta-label{font-size:9px;color:#555;margin-bottom:0}
+      .inv-meta-value{font-weight:600;min-height:1.1em}
+      .inv-buyer{padding:10px 12px;font-size:11px}
       .inv-buyer .b-label{font-size:10px;color:#444;margin-bottom:3px}
       .inv-buyer .b-name{font-weight:700;font-size:12px}
       .inv-buyer .b-gst{margin-top:3px;font-size:10.5px}
       .inv-terms{padding:6px 12px;border-bottom:1px solid #000;font-size:10.5px}
       .inv-prod-table{width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;border-bottom:1px solid #000}
+      .inv-prod-table tr{page-break-inside:avoid;break-inside:avoid}
       .inv-prod-table th{border-bottom:1px solid #000;border-right:1px solid #000;padding:6px 5px;text-align:left;font-size:10px;background:#f8f8f8;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word}
       .inv-prod-table th:last-child{border-right:none}
       .inv-prod-table td{border-bottom:1px solid #ccc;border-right:1px solid #ccc;padding:5px 5px;font-size:10px;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word}
@@ -707,7 +669,7 @@ function printInvoice() {
       .inv-sig{padding:10px 12px;text-align:right;font-size:10.5px}
       .inv-sig .sig-for{font-weight:700;margin-bottom:40px}
       .inv-sig .sig-auth{font-size:10px;color:#444;border-top:1px solid #000;padding-top:4px;display:inline-block}
-      .inv-computer{text-align:center;padding:6px;font-size:10px;color:#555;border-top:1px solid #000}
+      .inv-computer{text-align:center;padding:6px;font-size:10px;color:#555;border-top:1px solid #000;page-break-inside:avoid;break-inside:avoid}
       .inv-title{text-align:center;font-size:15px;font-weight:700;margin-bottom:0;letter-spacing:1px;padding-bottom:6px}
     </style>
   </head><body>${html}</body></html>`);
@@ -790,7 +752,7 @@ function captureForm() {
     'invoiceNumber','invoiceDate','deliveryNote','paymentMode',
     'supplierRef','otherRef','buyerOrderNo','buyerOrderDate',
     'despatchDocNo','deliveryNoteDate','despatchThrough','destination',
-    'termsOfDelivery','vehicleNo','ewayBill','contactNumber',
+    'termsOfDelivery','vehicleNo','ewayBill','contactNumber','billOfLading',
     'bankName','accountNumber','ifscCode','branchName',
     'declarationText','authorisedName',
     'loadingCharges','freightCharges','otherCharges','discount'
@@ -802,15 +764,13 @@ function captureForm() {
   snap.products = [];
   document.querySelectorAll('#productBody tr').forEach(tr => {
     snap.products.push({
-      desc:     tr.querySelector('.p-desc').value,
-      hsn:      tr.querySelector('.p-hsn').value,
-      qty:      tr.querySelector('.p-qty').value,
-      unit:     tr.querySelector('.p-unit').value,
-      per:      tr.querySelector('.p-per').value,
-      rateIncl: tr.querySelector('.p-rate-incl').value,
-      rateExcl: tr.querySelector('.p-rate-excl').value,
-      amount:   tr.querySelector('.p-amount').value,
-      vat:      tr.querySelector('.p-vat').value
+      desc:   tr.querySelector('.p-desc').value,
+      hsn:    tr.querySelector('.p-hsn').value,
+      qty:    tr.querySelector('.p-qty').value,
+      unit:   tr.querySelector('.p-unit').value,
+      per:    tr.querySelector('.p-per').value,
+      rate:   tr.querySelector('.p-rate').value,
+      amount: tr.querySelector('.p-amount').value
     });
   });
 
@@ -819,30 +779,34 @@ function captureForm() {
   // gst radio
   const gstRadio = document.querySelector('input[name="gstMode"]:checked');
   snap.gstModeRadio = gstRadio ? gstRadio.value : 'cgst_sgst';
+  // round-off checkbox (captured separately — checkboxes don't restore via .value)
+  const roundEl = document.getElementById('enableRoundOff');
+  snap.enableRoundOff = roundEl ? roundEl.checked : true;
   return snap;
 }
 
 function restoreForm(snap) {
   Object.keys(snap).forEach(id => {
-    if (id === 'products' || id === 'gstMode' || id === 'gstRate' || id === 'gstModeRadio') return;
+    if (id === 'products' || id === 'gstMode' || id === 'gstRate' || id === 'gstModeRadio' || id === 'enableRoundOff') return;
     const el = document.getElementById(id);
     if (el) el.value = snap[id];
   });
+
+  const roundEl = document.getElementById('enableRoundOff');
+  if (roundEl) roundEl.checked = (snap.enableRoundOff !== undefined) ? !!snap.enableRoundOff : true;
 
   // products
   document.getElementById('productBody').innerHTML = '';
   (snap.products || []).forEach(p => {
     addProductRow();
     const tr = document.querySelector('#productBody tr:last-child');
-    tr.querySelector('.p-desc').value     = p.desc;
-    tr.querySelector('.p-hsn').value      = p.hsn;
-    tr.querySelector('.p-qty').value      = p.qty;
-    tr.querySelector('.p-unit').value     = p.unit;
-    tr.querySelector('.p-per').value      = p.per;
-    tr.querySelector('.p-rate-incl').value= p.rateIncl;
-    tr.querySelector('.p-rate-excl').value= p.rateExcl;
-    tr.querySelector('.p-amount').value   = p.amount;
-    tr.querySelector('.p-vat').value      = p.vat;
+    tr.querySelector('.p-desc').value   = p.desc;
+    tr.querySelector('.p-hsn').value    = p.hsn;
+    tr.querySelector('.p-qty').value    = p.qty;
+    tr.querySelector('.p-unit').value   = p.unit;
+    tr.querySelector('.p-per').value    = p.per;
+    tr.querySelector('.p-rate').value   = p.rate != null ? p.rate : p.rateIncl;
+    tr.querySelector('.p-amount').value = p.amount;
   });
 
   // gst
